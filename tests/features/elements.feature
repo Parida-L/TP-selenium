@@ -9,8 +9,8 @@ Feature: DemoQA Elements Page
     And I select all checkboxes except "Office" and "Excel file.doc"
     Then only the selected checkboxes should remain checked
         
-#   Scenario: Verify the web tables page 
-# 	Given I navigate to the "Web Tables" on Elements page
-#     When I delete the last two rows of the users table
-#     And I update the salary of the remaining entry to "4300"
-#     Then the table should reflect the updated salary 
+  Scenario: Verify the web tables page 
+      Given I navigate to the "Web Tables" on Elements page
+      When I delete the last two rows of the users table
+      And I update the salary of the remaining entry to "4300"
+      Then the table should reflect the changes made

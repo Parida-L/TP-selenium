@@ -114,4 +114,62 @@ def verify_checkboxes(browser):
     browser.execute_script("arguments[0].scrollIntoView(true);", excel_checkbox)
     time.sleep(1) 
     assert excel_checkbox.is_selected() == False, "Excel checkbox is selected"
-   
+
+#SCENARIO 2: Verify the web tables page
+@scenario('features/elements.feature', 'Verify the web tables page')
+def test_web_tables():
+    pass
+
+@given('I navigate to the "Web Tables" on Elements page')
+def navigate_to_web_tables(browser):
+    # Step 1: Navigate to DemoQA website
+    browser.get("https://demoqa.com/")
+    WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "card-body")),
+        message="DemoQA website is not accessible"
+    )   
+    assert browser.title == "DEMOQA", "Title does not match"
+    # Step 2: Click on "Elements"
+    element = browser.find_element(By.CLASS_NAME, 'card')
+    browser.execute_script("arguments[0].scrollIntoView(true);", element)
+    time.sleep(1)
+    element.click()
+    # Step 3: Click on "Web Tables"
+    web_tables_section = WebDriverWait(browser, 10).until( 
+        EC.presence_of_element_located((By.XPATH, '//span[text()="Web Tables"]')),
+        message="Web Tables section is not accessible"
+    )
+    web_tables_section.click()
+    assert browser.find_element(By.XPATH, '//h1[text()="Web Tables"]').text == 'Web Tables', "Header does not match"
+
+@when('I delete the last two rows of the users table')
+def delete_last_two_rows(browser):
+    delete_row = browser.find_element(By.CSS_SELECTOR, '#delete-record-3 path')
+    browser.execute_script("arguments[0].scrollIntoView(true);", delete_row)
+    delete_row.click()
+    delete_row2 = browser.find_element(By.CSS_SELECTOR, '#delete-record-2 path')
+    browser.execute_script("arguments[0].scrollIntoView(true);", delete_row2)
+    delete_row2.click()
+
+@when('I update the salary of the remaining entry to "4300"')
+def update_salary(browser):
+    edit_button = browser.find_element(By.CSS_SELECTOR, '.action-buttons span[title="Edit"]')
+    edit_button.click()
+    salary_input = WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, '#salary'))
+    )
+    salary_input.clear()
+    time.sleep(3)
+    salary_input.send_keys('4300')
+    submit_button = WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located((By.ID, 'submit'))
+    )
+    browser.execute_script("arguments[0].scrollIntoView(true);", submit_button)
+    submit_button.click()
+
+
+@then('the table should reflect the changes made')
+def verify_updated_salary(browser):
+    salary_cell = browser.find_element(By.CSS_SELECTOR, '.rt-tr-group:nth-child(1) .rt-td:nth-child(5)')
+    print(f"Salary displayed: {salary_cell.text}") 
+    assert salary_cell.text == '4300', f"Expected salary to be '4300', but got '{salary_cell.text}'"
