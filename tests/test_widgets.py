@@ -27,17 +27,26 @@ def navigate_to_widgets_page(browser):
 
 @when('I start the progress bar')
 def start_progress_bar(browser):
+    start_button_locator = (By.ID, "startStopButton")
     start_button = WebDriverWait(browser, 10).until(
-        EC.element_to_be_clickable((By.ID, "startStopButton"))
+        EC.element_to_be_clickable(start_button_locator)
     )
+    time.sleep(2)
+    browser.execute_script("arguments[0].scrollIntoView({block: 'center'});", start_button)
+    time.sleep(2)
     start_button.click()
 
 @then('it should finish at "100%"')
 def verify_progress_bar_completion(browser):
+    progress_bar_locator = (By.CLASS_NAME, "progress-bar")
     WebDriverWait(browser, 30).until(
-        EC.text_to_be_present_in_element((By.CLASS_NAME, "progress-bar"), "100%")
+        EC.text_to_be_present_in_element(progress_bar_locator, "100%"),
+        message="Progress bar did not reach 100% within the timeout."
     )
-    progress_bar = browser.find_element(By.CLASS_NAME, "progress-bar")
+    time.sleep(3)
+    progress_bar = browser.find_element(*progress_bar_locator)
+    #browser.execute_script("arguments[0].scrollIntoView({block: 'center'});", progress_bar)
+    time.sleep(3)
     assert progress_bar.text == "100%", f"Expected progress bar to show '100%', but got '{progress_bar.text}'"
 
 #SCENARIO 2 - MENU BEHAVIOR
@@ -57,23 +66,20 @@ def navigate_to_sub_list(browser):
         EC.visibility_of_element_located(main_item_2_locator),
         message="Main Item 2 is not found on the page"
     )
+    time.sleep(2)
     browser.execute_script("arguments[0].scrollIntoView({block: 'center'});", main_item_2)
-    time.sleep(1)  # Allow time for animations if applicable
-    mouse_over_main_item = ActionChains(browser)
-    mouse_over_main_item.move_to_element(main_item_2).perform()
-    time.sleep(1)  # Allow time for animations if applicable
+    ActionChains(browser).move_to_element(main_item_2).perform()
 
     sub_sub_list_locator = (By.XPATH, '//*[@id="nav"]/li[2]/ul/li[3]/a')
     sub_sub_list = WebDriverWait(browser, 10).until(
         EC.visibility_of_element_located(sub_sub_list_locator),
-        message="Sub Sub List is not found on the page"
+        message="Sub Sub List is not found on the page",
     )
     browser.execute_script("arguments[0].scrollIntoView({block: 'center'});", sub_sub_list)
-    time.sleep(1)  # Allow time for animations if applicable
-    mouse_over_sub_sub_list = ActionChains(browser)
-    mouse_over_sub_sub_list.move_to_element(sub_sub_list).perform()
-    time.sleep(1)  # Allow time for animations if applicable
-
+    time.sleep(3)
+    ActionChains(browser).move_to_element(sub_sub_list).perform()
+    time.sleep(3)  # Allow time for hover effects
+   
 
 @then('I reach "Sub Sub Item 2" menu item')
 def click_sub_sub_item_2(browser):
@@ -105,18 +111,21 @@ def select_another_root_option(browser):
         EC.element_to_be_clickable(select_value_dropdown_locator),
         message="Select value dropdown is not found on the page"
     )
-    time.sleep(1)
+    time.sleep(3)
+    browser.execute_script("arguments[0].scrollIntoView(true);", select_value_dropdown)
+    time.sleep(3)
     select_value_dropdown.click()
-
-    time.sleep(1)
+    time.sleep(3)
     another_root_option_locator = (By.ID, "react-select-2-option-3")  
     another_root_option = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable(another_root_option_locator),
         message="Another root option is not found in the dropdown"
     )
+    time.sleep(1)
     browser.execute_script("arguments[0].scrollIntoView(true);", another_root_option)
     time.sleep(1)
     another_root_option.click()
+    time.sleep(1)
     
 
 @when('I select "Option 2" in the "Select one" dropdown')
@@ -127,13 +136,18 @@ def select_other_option(browser):
         message="Select one dropdown is not found on the page"
     )
     time.sleep(1)
+    browser.execute_script("arguments[0].scrollIntoView(true);", select_one_dropdown)
+    time.sleep(1)
     select_one_dropdown.click()
     time.sleep(1)
+
     other_option_locator = (By.XPATH, '//div[@id="selectOne"]/div[2]/div/div/div[2]/div[6]')  
     other_option = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable(other_option_locator),
         message="Other option is not found in the dropdown"
     )
+    time.sleep(1)
+    browser.execute_script("arguments[0].scrollIntoView(true);", other_option)
     time.sleep(1)
     other_option.click()
 
@@ -144,6 +158,7 @@ def select_aqua_option(browser):
         EC.element_to_be_clickable(old_style_select_menu_locator),
         message="Old Style Select Menu dropdown is not found on the page"
     )
+    time.sleep(1)
     # Use the Select class to interact with the dropdown
     select_menu = Select(old_style_select_menu)  # Initialize Select on the <select> element
     time.sleep(1)
@@ -158,6 +173,8 @@ def select_red_and_black_option(browser):
         message="Multi Select Drop Down is not found on the page"
     )
     time.sleep(1)
+    browser.execute_script("arguments[0].scrollIntoView(true);", multi_select_dropdown)
+    time.sleep(1)
     multi_select_dropdown.click()
     
     red_option_locator = (By.ID, "react-select-4-option-2")  
@@ -166,7 +183,10 @@ def select_red_and_black_option(browser):
         message="Red option is not found in the dropdown"
     )
     time.sleep(1)
+    browser.execute_script("arguments[0].scrollIntoView(true);", red_option)
+    time.sleep(1)
     red_option.click()
+
     black_option_locator = (By.ID, "react-select-4-option-3") 
     black_option = WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable(black_option_locator),
