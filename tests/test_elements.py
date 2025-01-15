@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pytest_bdd import given, when, then, scenario
+from selenium.common.exceptions import ElementClickInterceptedException
 
 # Test Fixture
 @pytest.fixture
@@ -34,7 +35,6 @@ def navigate_to_checkboxes_elements(browser):
     check_box_section = WebDriverWait(browser, 10).until( EC.presence_of_element_located((By.XPATH, '//span[text()="Check Box"]')),message="Check Box section is not accessible")
     check_box_section.click()
     assert browser.find_element(By.XPATH, '//h1[text()="Check Box"]').text == 'Check Box', "Header does not match"
-    
 
 @when('I expand all the checkboxes')
 def expand_checkboxes(browser):
@@ -90,7 +90,6 @@ def select_checkboxes(browser):
     time.sleep(1)
     browser.execute_script("arguments[0].scrollIntoView(true);", excel_checkbox_input)
     assert not excel_checkbox_input.is_selected(), "The excel checkbox is still selected!"
-
 
 @then('only the selected checkboxes should remain checked')
 def verify_checkboxes(browser):
@@ -153,23 +152,49 @@ def delete_last_two_rows(browser):
 
 @when('I update the salary of the remaining entry to "4300"')
 def update_salary(browser):
-    edit_button = browser.find_element(By.CSS_SELECTOR, '.action-buttons span[title="Edit"]')
-    edit_button.click()
-    salary_input = WebDriverWait(browser, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, '#salary'))
+    edit_button_locator = (By.CSS_SELECTOR, '.action-buttons span[title="Edit"]')
+    edit_button = WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located(edit_button_locator),
+        message="Edit button is not accessible"
     )
+    browser.execute_script("arguments[0].scrollIntoView(true);", edit_button)
+    edit_button.click()
+
+    salary_input_locator = (By.CSS_SELECTOR, '#salary')
+    salary_input = WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located(salary_input_locator),
+        message="Salary input is not accessible"
+    )
+    browser.execute_script("arguments[0].scrollIntoView(true);", salary_input)
     salary_input.clear()
-    time.sleep(3)
+    time.sleep(2)
     salary_input.send_keys('4300')
+
+    submit_button_locator = (By.ID, 'submit')
     submit_button = WebDriverWait(browser, 10).until(
-        EC.presence_of_element_located((By.ID, 'submit'))
+        EC.presence_of_element_located(submit_button_locator),
+        message="Submit button is not accessible"
     )
     browser.execute_script("arguments[0].scrollIntoView(true);", submit_button)
-    submit_button.click()
+    time.sleep(2)
+    # Check if the element is clickable
+    try:
+        WebDriverWait(browser, 5).until(
+            EC.element_to_be_clickable(submit_button_locator),
+            message="Submit button is not clickable"
+        )
+        submit_button.click()
+    except ElementClickInterceptedException:
+        print("DEBUG: Element click intercepted. Attempting to force click.")
+        browser.execute_script("arguments[0].click();", submit_button)
 
 
 @then('the table should reflect the changes made')
 def verify_updated_salary(browser):
-    salary_cell = browser.find_element(By.CSS_SELECTOR, '.rt-tr-group:nth-child(1) .rt-td:nth-child(5)')
+    salary_cell_locator = (By.CSS_SELECTOR, '.rt-tr-group:nth-child(1) .rt-td:nth-child(5)')
+    salary_cell = WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located(salary_cell_locator),
+        message="Salary cell is not accessible"
+    )
     print(f"Salary displayed: {salary_cell.text}") 
     assert salary_cell.text == '4300', f"Expected salary to be '4300', but got '{salary_cell.text}'"
